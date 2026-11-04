@@ -8,6 +8,7 @@
 #   grafican de forma honesta?
 # =============================================================================
 
+
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -15,11 +16,27 @@ library(scales)
 
 azul <- "#223c6a"; oro <- "#e69b0a"; gris <- "grey60"
 
+# -----------------------------------------------------------------------------
+# TEMA PROPIO — como función, activado con theme_set()
+# -----------------------------------------------------------------------------
+tema_t4 <- function(base = 12) {
+  theme_minimal(base_size = base) +
+    theme(plot.title            = element_text(face = "bold", color = azul),
+          panel.grid.minor      = element_blank(),                            
+          plot.title.position   = "plot",                                     
+          plot.caption          = element_text(color = "grey40", size = base * 0.75, hjust = 0),
+          plot.caption.position = "plot",
+          legend.position       = "top",
+          strip.text            = element_text(face = "bold"),
+          plot.background       = element_rect(fill = "white", color = NA),   
+          plot.margin           = margin(10, 15, 10, 10))                    
+}
+theme_set(tema_t4())          # desde aquí, TODOS los gráficos usan el tema
+
 # Formato chileno para los ejes
 pesos <- label_currency(big.mark = ".", decimal.mark = ",")
 
 dir.create("output/figuras", recursive = TRUE, showWarnings = FALSE)
-
 
 # -----------------------------------------------------------------------------
 # GRÁFICO 1 · CASEN: educación e ingreso por género
@@ -58,12 +75,10 @@ g1 <- ggplot(casen, aes(educ, ingreso, color = genero)) +
   scale_x_continuous(expand = expansion(mult = c(0.02, 0.15))) +
   labs(title    = "La brecha de género en el ingreso disminuye con más años de educación",
        x = "Años de educación", y = "Ingreso mensual",
-       caption = "Fuente: CASEN, muestra del curso (55 personas con ingreso, sin ponderar).") +
-  theme_minimal(base_size = 12) +
-  theme(panel.grid.minor = element_blank())
+       caption = "Fuente: CASEN, muestra del curso (55 personas con ingreso, sin ponderar).")
 g1
 
-ggsave("output/figuras/t4p1_g1_casen.png", g1, width = 8, height = 5, dpi = 300)
+ggsave("output/figuras/t4p1_g1_casen.png", g1, width = 8, height = 5.5, dpi = 300)
 
 # PREGUNTA: ¿qué pregunta responde este gráfico que no respondería la versión
 # con una sola recta?
@@ -85,7 +100,7 @@ salario <- read.csv("data/raw/salario_minimo_chile.csv") |>
   mutate(nominal = salario_minimo,
          real    = salario_minimo / ipc * 100)    # IPC base 2010 = 100
 
-# Formato LARGO (S6): una fila por año y serie → una columna "serie" para mapear
+# Formato LARGO: una fila por año y serie, una columna "serie" para mapear
 salario_largo <- salario |>
   pivot_longer(cols = c(nominal, real),
                names_to = "serie", values_to = "pesos") |>
@@ -113,13 +128,11 @@ g2 <- ggplot(salario_largo, aes(anio, pesos, color = serie, linetype = serie)) +
   labs(title    = "Entre 2014 y 2025, el mínimo nominal subió 135 %, pero el real solo 44 %",
        x = NULL, y = "Ingreso mínimo mensual",
        caption = "Fuente: ingreso mínimo legal e IPC (base 2010 = 100), 2014–2025. Real = nominal / IPC × 100.") +
-  theme_minimal(base_size = 12) +
   coord_cartesian(clip = "off") +          # que la etiqueta no se corte
-  theme(legend.position = "none",          # sin leyenda: etiquetas directas
-        panel.grid.minor = element_blank())
+  theme(legend.position = "none")          # sin leyenda: etiquetas directas
 g2
 
-ggsave("output/figuras/t4p1_g2_salario.png", g2, width = 8, height = 5, dpi = 300)
+ggsave("output/figuras/t4p1_g2_salario.png", g2, width = 8, height = 5.5, dpi = 300)
 
 # PREGUNTAS: ¿por qué aquí el eje Y no necesita partir en 0 y en un gráfico de
 # barras sí? ¿Qué ganas usando color Y tipo de línea?
@@ -159,7 +172,7 @@ comp <- ocupados |>
   mutate(pct = pob / sum(pob)) |>
   ungroup()
 
-# Diferencia mujeres − hombres en puntos porcentuales (para la respuesta)
+# Diferencia mujeres − hombres en puntos porcentuales
 dif <- comp |>
   select(sexo, categoria, pct) |>
   pivot_wider(names_from = sexo, values_from = pct) |>
@@ -167,7 +180,7 @@ dif <- comp |>
   arrange(desc(abs(dif_pp)))
 dif
 
-# Lo mismo SIN ponderar (para responder qué cambia si borras weight)
+# Lo mismo SIN ponderar
 ocupados |>
   count(sexo, categoria) |>
   group_by(sexo) |>
@@ -176,7 +189,7 @@ ocupados |>
             by = c("sexo", "categoria"))
 
 # Paleta Okabe-Ito (accesible para daltonismo, S9)
-okabe <- c("#0072B2", "#56B4E9", "#E69F00", "#009E73", "#CC79A7", "#999999")
+okabe <- c(azul, "#56B4E9", oro, "#009E73", "#CC79A7", gris)   # Okabe-Ito con el azul y oro del curso
 
 g3 <- ggplot(ocupados, aes(y = sexo, fill = categoria, weight = fact_cal)) +
   geom_bar(position = position_fill(reverse = TRUE), width = 0.6) +
@@ -191,12 +204,10 @@ g3 <- ggplot(ocupados, aes(y = sexo, fill = categoria, weight = fact_cal)) +
   labs(title    = "Los hombres se concentran más en el empleo privado y las mujeres en el público",
        x = "% de los ocupados de cada sexo", y = NULL, fill = NULL,
        caption = "Fuente: INE, Encuesta Nacional de Empleo, trimestre mayo-julio 2026. Ocupados, ponderado con fact_cal.") +
-  theme_minimal(base_size = 12) +
-  theme(legend.position = "top",
-        panel.grid = element_blank())
+  theme(panel.grid = element_blank())
 g3
 
-ggsave("output/figuras/t4p1_g3_ene_categoria.png", g3, width = 9, height = 4.5, dpi = 300)
+ggsave("output/figuras/t4p1_g3_ene_categoria.png", g3, width = 8, height = 5.5, dpi = 300)
 
 # PREGUNTAS: ¿en qué categoría está la mayor diferencia entre hombres y
 # mujeres, y en cuál casi no hay? Da las cifras. ¿Qué cambiaría si borras
@@ -240,9 +251,8 @@ g3_sim <- ggplot(comparacion, aes(x = pct, y = sexo, fill = categoria)) +
   labs(title = "Sin fact_cal, la brecha en el empleo asalariado se exagera",
        x = "% de los ocupados de cada sexo", y = NULL, fill = NULL,
        caption = "Fuente: INE, ENE mayo-julio 2026. Ocupados; panel superior ponderado, inferior sin ponderar.") +
-  theme_minimal(base_size = 12) +
-  theme(legend.position = "top", panel.grid = element_blank())
+  theme(panel.grid = element_blank())
 g3_sim
 
-ggsave("output/figuras/t4p1_g3_simulacion_sin_ponderar.png", g3_sim, width = 9, height = 6, dpi = 300)
+ggsave("output/figuras/t4p1_g3_simulacion_sin_ponderar.png", g3_sim, width = 8, height = 5.5, dpi = 300)
 

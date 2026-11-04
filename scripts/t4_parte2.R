@@ -14,23 +14,26 @@ library(scales)
 library(ggrepel)
 library(patchwork)
 
-azul <- "#223c6a"; oro <- "#e69b0a"; gris <- "grey70"
+azul <- "#223c6a"; oro <- "#e69b0a"; gris <- "grey60"
 pesos <- label_currency(big.mark = ".", decimal.mark = ",")
 pct   <- label_percent(accuracy = 1, decimal.mark = ",")
 
 dir.create("output/figuras", recursive = TRUE, showWarnings = FALSE)
 
-
 # -----------------------------------------------------------------------------
-# TEMA PROPIO — como función, con dos (o más) cambios, activado con theme_set()
+# TEMA PROPIO — como función, activado con theme_set()
 # -----------------------------------------------------------------------------
 tema_t4 <- function(base = 12) {
   theme_minimal(base_size = base) +
-    theme(plot.title         = element_text(face = "bold", color = azul),  # cambio 1
-          panel.grid.minor   = element_blank(),                            # cambio 2
-          plot.title.position = "plot",                                    # cambio 3
-          plot.caption       = element_text(color = "grey40", size = base * 0.75),
-          plot.caption.position = "plot")
+    theme(plot.title            = element_text(face = "bold", color = azul),
+          panel.grid.minor      = element_blank(),                            
+          plot.title.position   = "plot",                                     
+          plot.caption          = element_text(color = "grey40", size = base * 0.75, hjust = 0),
+          plot.caption.position = "plot",
+          legend.position       = "top",
+          strip.text            = element_text(face = "bold"),
+          plot.background       = element_rect(fill = "white", color = NA),   
+          plot.margin           = margin(10, 15, 10, 10))                    
 }
 theme_set(tema_t4())          # desde aquí, TODOS los gráficos usan el tema
 
@@ -73,10 +76,9 @@ g1 <- ggplot(casen, aes(educ, ingreso, color = genero)) +
   scale_y_continuous(labels = pesos) +
   labs(title = "Más educación, más ingreso, en hombres y mujeres",
        x = "Años de educación", y = "Ingreso mensual", color = NULL,
-       caption = "Fuente: CASEN, muestra del curso (55 personas, sin ponderar).") +
-  theme(legend.position = "top")
+       caption = "Fuente: CASEN, muestra del curso (55 personas, sin ponderar).")
 g1
-ggsave("output/figuras/t4p2_g1_casen.png", g1, width = 8, height = 5, dpi = 300)
+ggsave("output/figuras/t4p2_g1_casen.png", g1, width = 8, height = 5.5, dpi = 300)
 
 
 # -----------------------------------------------------------------------------
@@ -128,7 +130,7 @@ g2 <- ggplot(horas_educ, aes(habituales)) +
         strip.text.y.left = element_text(angle = 0, hjust = 1),
         panel.grid.major.y = element_blank())
 g2
-ggsave("output/figuras/t4p2_g2_horas_educacion.png", g2, width = 9, height = 7, dpi = 300)
+ggsave("output/figuras/t4p2_g2_horas_educacion.png", g2, width = 8, height = 5.5, dpi = 300)
 
 # JUSTIFICACIÓN DE GEOM:
 # Usar densidad en facetas permite comparar visualmente la forma completa de las distribuciones por 
@@ -151,19 +153,20 @@ ceros
 g3 <- ggplot(horas2, aes(habituales, efectivas)) +
   geom_bin_2d(aes(weight = fact_cal), binwidth = c(2, 2)) +
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "grey20") +
-  annotate("text", x = 104, y = 92, label = "efectivas = habituales",
-           hjust = 0, size = 3.2) +
-  annotate("label", x = 90, y = 18, hjust = 0, size = 3.2, label.size = 0,
+  annotate("text", x = 88, y = 100, label = "efectivas = habituales",
+           hjust = 1, size = 3.2, color = "grey30") +
+  annotate("label", x = 65, y = 18, hjust = 0, size = 3.2, label.size = 0, color = "grey30",
            label = "Fila de ceros: ocupados ausentes\n(vacaciones, licencia, permiso)") +
-  scale_fill_viridis_c(trans = "log10",
-                       labels = label_number(big.mark = ".", decimal.mark = ",")) +
+  scale_fill_gradient(low = "#d6dde8", high = azul, trans = "log10",   # escala de un solo color
+                      labels = label_number(big.mark = ".", decimal.mark = ",")) +
   coord_cartesian(xlim = c(0, 120), ylim = c(0, 120)) +
   labs(title    = "Tener empleo no garantiza trabajar",
        x = "Horas habituales por semana", y = "Horas efectivas la semana pasada",
        fill = "Ocupados\n(escala log)",
-       caption = paste(fuente_ene, "Sin centinelas 888/999 en ninguna de las dos variables."))
+       caption = paste(fuente_ene, "Sin centinelas 888/999 en ninguna de las dos variables.")) +
+  theme(legend.position = "right")         # la barra de color se lee mejor al costado
 g3
-ggsave("output/figuras/t4p2_g3_habituales_efectivas.png", g3, width = 8, height = 6.5, dpi = 300)
+ggsave("output/figuras/t4p2_g3_habituales_efectivas.png", g3, width = 8, height = 5.5, dpi = 300)
 
 
 # -----------------------------------------------------------------------------
@@ -194,7 +197,7 @@ g4 <- ggplot(ic_region, aes(p, reorder(region_txt, p))) +
        x = "% de ocupados informales (IC 95 %)", y = NULL,
        caption = paste(fuente_ene, "IC aproximado: no considera el diseño muestral."))
 g4
-ggsave("output/figuras/t4p2_g4_informalidad_region_ic.png", g4, width = 8, height = 6, dpi = 300)
+ggsave("output/figuras/t4p2_g4_informalidad_region_ic.png", g4, width = 8, height = 5.5, dpi = 300)
 
 # LIMITACIÓN: ¿por qué los IC verdaderos serían más anchos?
 # RESPUESTA: Los intervalos calculados asumen la fórmula básica de un muestreo 100 % al azar. Como la ENE agrupa a las personas 
@@ -232,7 +235,7 @@ g5 <- ggplot(ic_edad, aes(tramo, p, color = sexo_txt, group = sexo_txt)) +
        x = "Tramo de edad", y = "% de ocupados informales (IC 95 %)",
        caption = paste(fuente_ene, "IC aproximado: no considera el diseño muestral."))
 g5
-ggsave("output/figuras/t4p2_g5_informalidad_edad_ic.png", g5, width = 8, height = 5, dpi = 300)
+ggsave("output/figuras/t4p2_g5_informalidad_edad_ic.png", g5, width = 8, height = 5.5, dpi = 300)
 
 # LIMITACIÓN de este gráfico:
 # RESPUESTA: Al basarse en datos de un solo trimestre (corte transversal), es solo una "foto" del momento. Compara a 
@@ -248,7 +251,8 @@ figura <- ((g4 | (g2 / g5)) & labs(caption = NULL)) +
   plot_annotation(title      = "Radiografía del empleo en Chile: cómo el territorio, la educación y la edad determinan la informalidad",
                   caption    = "Fuente: INE, ENE mayo-julio 2026. Ocupados, ponderado con fact_cal. IC al 95 % aproximados.",
                   tag_levels = "A",
-                  theme = theme(plot.title = element_text(size = 16, face = "bold", color = azul)))
+                  theme = theme(plot.title   = element_text(size = 16, face = "bold", color = azul),
+                                plot.caption = element_text(color = "grey40", hjust = 0)))
 figura
 
 ggsave("output/figuras/t4p2_figura_compuesta.png", figura, width = 16, height = 10, dpi = 300)

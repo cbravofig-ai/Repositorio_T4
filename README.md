@@ -58,7 +58,9 @@ precariedad en el país.
 - Herramienta utilizada: Gemini / Claude
 - Para qué la usé: Claude generó una base de los scripts y respuestas modelo, dada 
 la instrucción de mi parte de qué quería lograr en los gráficos; también lo usé 
-para entender el código y corregir errores.
+para entender el código y corregir errores. Se trabajó también, posterior a la 
+entrega, el perfeccionamiento de los gráficos por temas estéticos; para ello, se 
+consultó sobre el código pertinente para llevar a cabo la estética esperada.
 - Qué hice yo: revisé y entendí cada línea, elegí y escribí los títulos, adapté 
 el código, y redacté las respuestas y la reflexión con mis palabras.
 - Verificación: confirmo que entiendo y puedo explicar todo lo que entrego.
