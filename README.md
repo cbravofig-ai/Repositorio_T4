@@ -62,3 +62,7 @@ para entender el código y corregir errores.
 - Qué hice yo: revisé y entendí cada línea, elegí y escribí los títulos, adapté 
 el código, y redacté las respuestas y la reflexión con mis palabras.
 - Verificación: confirmo que entiendo y puedo explicar todo lo que entrego.
+
+Autor
+Camila Ignacia Bravo Figueroa - noviembre, 2026
+
